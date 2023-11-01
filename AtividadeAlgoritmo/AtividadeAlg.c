@@ -1,10 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <locale.h>
-#include <windows.h>
 
-struct Artista {
+struct Artista
+{
     char nome[100];
     char genero[100];
     char local[100];
@@ -12,12 +11,14 @@ struct Artista {
     int num_albums;
 };
 
-// Essa função serve para ler um artista do arquivo
-struct Artista lerArtista(FILE *arquivo) {
+// Função para ler um artista do arquivo
+struct Artista lerArtista(FILE *arquivo)
+{
     struct Artista artista;
     char linha[100];
-    
-    if (fgets(artista.nome, sizeof(artista.nome), arquivo) == NULL) {
+
+    if (fgets(artista.nome, sizeof(artista.nome), arquivo) == NULL)
+    {
         strcpy(artista.nome, "FIM"); 
         return artista;
     }
@@ -27,42 +28,49 @@ struct Artista lerArtista(FILE *arquivo) {
     artista.genero[strcspn(artista.genero, "\n")] = '\0'; 
     fgets(artista.local, sizeof(artista.local), arquivo);
     artista.local[strcspn(artista.local, "\n")] = '\0'; 
-    
+
     artista.num_albums = 0;
     artista.albums = NULL;
-    
-    while (fgets(linha, sizeof(linha), arquivo)) {
-        if (strcmp(linha, "==========\n") == 0) {
+
+    while (1)
+    {
+        if (fgets(linha, sizeof(linha), arquivo) == NULL || strcmp(linha, "==========\n") == 0)
+        {
             break;
         }
         artista.num_albums++;
         artista.albums = (char **)realloc(artista.albums, artista.num_albums * sizeof(char *));
         artista.albums[artista.num_albums - 1] = strdup(linha);
     }
-    
+
     return artista;
 }
 
-void imprimirArtista(struct Artista artista) {
+void imprimirArtista(struct Artista artista)
+{
     printf("Nome: %s\n", artista.nome);
     printf("Genero: %s\n", artista.genero);
     printf("Local: %s\n", artista.local);
     printf("Albuns:\n");
-    for (int i = 0; i < artista.num_albums; i++) {
+    for (int i = 0; i < artista.num_albums; i++)
+    {
         printf("%s", artista.albums[i]);
     }
     printf("==========\n");
 }
 
-void inserirArtista(struct Artista novoArtista, struct Artista **artistas, int *num_artistas) {
+void inserirArtista(struct Artista novoArtista, struct Artista **artistas, int *num_artistas)
+{
     *artistas = (struct Artista *)realloc(*artistas, (*num_artistas + 1) * sizeof(struct Artista));
 
     int posicao = 0;
-    while (posicao < *num_artistas && strcmp(novoArtista.nome, (*artistas)[posicao].nome) > 0) {
+    while (posicao < *num_artistas && strcmp(novoArtista.nome, (*artistas)[posicao].nome) > 0)
+    {
         posicao++;
     }
 
-    for (int i = *num_artistas; i > posicao; i--) {
+    for (int i = *num_artistas; i > posicao; i--)
+    {
         (*artistas)[i] = (*artistas)[i - 1];
     }
 
@@ -70,199 +78,62 @@ void inserirArtista(struct Artista novoArtista, struct Artista **artistas, int *
 
     (*num_artistas)++;
 
-    FILE *arquivo = fopen("C:\\Users\\leona\\OneDrive\\Documentos\\artistas.txt", "w");
-    if (arquivo == NULL) {
-        printf("Erro para abrir o arquivo da escrita...\n");
-        exit(1);
-    }
-    for (int i = 0; i < *num_artistas; i++) {
-        fprintf(arquivo, "%s\n", (*artistas)[i].nome);
-        fprintf(arquivo, "%s\n", (*artistas)[i].genero);
-        fprintf(arquivo, "%s\n", (*artistas)[i].local);
-        for (int j = 0; j < (*artistas)[i].num_albums; j++) {
-            fprintf(arquivo, "%s", (*artistas)[i].albums[j]);
-        }
-        fprintf(arquivo, "\n\n==========\n");
-    }
-
-    fclose(arquivo);
-
-    printf("Artista inserido com sucesso!\n");
+    printf("Artista foi inserido com sucesso!\n");
 }
 
-void removerArtista(char *nomeArtista, struct Artista **artistas, int *num_artistas) {
-    int posicao = -1;
-    
-    for (int i = 0; i < *num_artistas; i++) {
-        if (strcmp(nomeArtista, (*artistas)[i].nome) == 0) {
-            posicao = i;
-            break;
-        }
-    }
-    
-    if (posicao == -1) {
-        printf("Artista não foi encontrado.\n");
-        return;
-    }
-    
-    for (int i = 0; i < (*artistas)[posicao].num_albums; i++) {
-        free((*artistas)[posicao].albums[i]);
-    }
-    free((*artistas)[posicao].albums);
-    
-    for (int i = posicao; i < *num_artistas - 1; i++) {
-        (*artistas)[i] = (*artistas)[i + 1];
-    }
-    
-    *artistas = (struct Artista *)realloc(*artistas, (*num_artistas - 1) * sizeof(struct Artista));
-    
-    (*num_artistas)--;
-
-    FILE *arquivo = fopen("C:\\Users\\leona\\OneDrive\\Documentos\\artistas.txt", "w");
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo.\n");
-        exit(1);
-    }
-
-    for (int i = 0; i < *num_artistas; i++) {
-        fprintf(arquivo, "%s\n", (*artistas)[i].nome);
-        fprintf(arquivo, "%s\n", (*artistas)[i].genero);
-        fprintf(arquivo, "%s\n", (*artistas)[i].local);
-        for (int j = 0; j < (*artistas)[i].num_albums; j++) {
-            fprintf(arquivo, "%s", (*artistas)[i].albums[j]);
-        }
-        fprintf(arquivo, "==========\n");
-    }
-
-    fclose(arquivo);
-
-    printf("Artista removido com sucesso!\n");
-}
-
-void buscarArtista(char *nomeArtista, struct Artista *artistas, int num_artistas) {
+void buscarArtista(char *nomeArtista, struct Artista *artistas, int num_artistas)
+{
     nomeArtista[strcspn(nomeArtista, "\n")] = '\0';
 
     int encontrado = 0;
-    
-    for (int i = 0; i < num_artistas; i++) {
-        if (strcmp(nomeArtista, artistas[i].nome) == 0) {
-            printf("\nARTISTA ENCONTRADO:\n");
-            imprimirArtista(artistas[i]);
-            encontrado = 1;
-            break; 
-    }
-    
-    if (!encontrado) {
-        printf("Não foi possível encontrar o arquivo.\n");
-    }
-}
+    int inicio = 0;
+    int fim = num_artistas - 1;
 
-void editarArtista(char *nomeArtista, struct Artista *artistas, int num_artistas) {
-    nomeArtista[strcspn(nomeArtista, "\n")] = '\0';
-
-    int encontrado = 0;
-    int indiceArtista = -1;
-
-    for (int i = 0; i < num_artistas; i++) {
-        if (strcmp(nomeArtista, artistas[i].nome) == 0) {
-            indiceArtista = i;
+    while (inicio <= fim)
+    {
+        int meio = (inicio + fim) / 2;
+        int comparacao = strcmp(nomeArtista, artistas[meio].nome);
+        if (comparacao == 0)
+        {
+            printf("\nArtista foi encontrado:\n");
+            imprimirArtista(artistas[meio]);
             encontrado = 1;
             break;
         }
-    }
-
-    if (!encontrado) {
-        printf("Não foi possível encontrar o artista.\n");
-        return;
-    }
-
-    printf("informe os novos detalhes do artista (ou deixe em branco para manter os detalhes existentes):\n");
-
-    char novoNome[100];
-    char novoGenero[100];
-    char novoLocal[100];
-
-    printf("Novo Nome (ou pressione Enter para manter '%s'): ", artistas[indiceArtista].nome);
-    fgets(novoNome, sizeof(novoNome), stdin);
-    novoNome[strcspn(novoNome, "\n")] = '\0';
-
-    printf("Novo Genero (ou pressione Enter para manter '%s'): ", artistas[indiceArtista].genero);
-    fgets(novoGenero, sizeof(novoGenero), stdin);
-    novoGenero[strcspn(novoGenero, "\n")] = '\0';
-
-    printf("Novo Local (ou pressione Enter para manter '%s'): ", artistas[indiceArtista].local);
-    fgets(novoLocal, sizeof(novoLocal), stdin);
-    novoLocal[strcspn(novoLocal, "\n")] = '\0';
-
-    if (strcmp(novoNome, "") != 0) {
-        strcpy(artistas[indiceArtista].nome, novoNome);
-    }
-    if (strcmp(novoGenero, "") != 0) {
-        strcpy(artistas[indiceArtista].genero, novoGenero);
-    }
-    if (strcmp(novoLocal, "") != 0) {
-        strcpy(artistas[indiceArtista].local, novoLocal);
-    }
-
-    FILE *arquivo = fopen("C:\\Users\\leona\\OneDrive\\Documentos\\artistas.txt", "w");
-    if (arquivo == NULL) {
-        printf("Erro ao abrir o arquivo para escrita.\n");
-        exit(1);
-    }
-
-    for (int i = 0; i < num_artistas; i++) {
-        fprintf(arquivo, "%s\n", artistas[i].nome);
-        fprintf(arquivo, "%s\n", artistas[i].genero);
-        fprintf(arquivo, "%s\n", artistas[i].local);
-        for (int j = 0; j < artistas[i].num_albums; j++) {
-            fprintf(arquivo, "%s", artistas[i].albums[j]);
+        else if (comparacao < 0)
+        {
+            fim = meio - 1;
         }
-        fprintf(arquivo, "==========\n");
-    }
-
-    fclose(arquivo);
-
-    printf("Detalhes do artista atualizados com sucesso!\n");
-}
-
-void buscaralbum(char *nomealbum, struct Artista *artistas, int num_artistas) {
-    int encontrado = 0;
-    
-    for (int i = 0; i < num_artistas; i++) {
-        for (int j = 0; j < artistas[i].num_albums; j++) {
-            if (strstr(artistas[i].albums[j], nomealbum) != NULL) {
-                printf("Álbum encontrado:\n");
-                printf("Artista: %s\n", artistas[i].nome);
-                printf("Álbum: %s", artistas[i].albums[j]);
-                encontrado = 1;
-            }
+        else
+        {
+            inicio = meio + 1;
         }
     }
-    
-    if (!encontrado) {
-        printf("Álbum nao encontrado.\n");
+
+    if (!encontrado)
+    {
+        printf("Artista nao foi encontrado.\n");
     }
 }
 
-int main() {
-    UINT CPAGE_UTF8 = 65001;
-    UINT CPAGE_DEFAULT = GetConsoleOutputCP();
-
-    SetConsoleOutputCP(CPAGE_UTF8);
-
+int main()
+{
     FILE *arquivo;
     struct Artista *artistas = NULL;
     int num_artistas = 0;
 
-    arquivo = fopen("C:\\Users\\User\\Desktop\\lista01_ed\\artistas.txt", "r");
-    if (arquivo == NULL) {
+    arquivo = fopen("C:\\Users\\leona\\OneDrive\\Área de Trabalho\\Lista1\\artistas.txt", "r");
+    if (arquivo == NULL)
+    {
         printf("Erro ao abrir o arquivo.\n");
         exit(1);
     }
 
-    while (!feof(arquivo)) {
+    while (!feof(arquivo))
+    {
         struct Artista artista = lerArtista(arquivo);
-        if (strcmp(artista.nome, "FIM") != 0) {
+        if (strcmp(artista.nome, "FIM") != 0)
+        {
             artistas = (struct Artista *)realloc(artistas, (num_artistas + 1) * sizeof(struct Artista));
             artistas[num_artistas] = artista;
             num_artistas++;
@@ -273,97 +144,80 @@ int main() {
 
     int escolha;
     char nomeArtista[100];
-    char nomealbum[100];
 
-    do {
+    do
+    {
         printf("\nMenu:\n");
-        printf("1. Informar Artista\n");
-        printf("2. Retirar Artista\n");
-        printf("3. Editar Artista\n");
-        printf("4. Buscar Artista\n");
-        printf("5. Buscar Álbum\n");
-        printf("6. Sair\n");
+        printf("1. Inserir artista\n");
+        printf("2. Buscar artista\n");
+        printf("3. Sair\n");
         printf("\nEscolha uma opcao: ");
         scanf("%d", &escolha);
 
-        while (getchar() != '\n');
+        // Limpar o buffer do teclado
+        while (getchar() != '\n')
+            ;
 
-        switch (escolha) {
-            case 1:
-                printf("Informe todos os detalhes do novo artista (ou digite 'FIM' para parar):\n");
-                struct Artista novoArtista;
-                printf("Nome: ");
-                fgets(novoArtista.nome, sizeof(novoArtista.nome), stdin);
-                novoArtista.nome[strcspn(novoArtista.nome, "\n")] = '\0';
-                printf("Genero: ");
-                fgets(novoArtista.genero, sizeof(novoArtista.genero), stdin);
-                novoArtista.genero[strcspn(novoArtista.genero, "\n")] = '\0';
-                printf("Local: ");
-                fgets(novoArtista.local, sizeof(novoArtista.local), stdin);
-                novoArtista.local[strcspn(novoArtista.local, "\n")] = '\0';
-                printf("Albuns (insira um por linha, informe 'FIM' para parar):\n");
-                novoArtista.num_albums = 0;
-                novoArtista.albums = NULL;
-                char album[100];
-                while (1) {
-                    fgets(album, sizeof(album), stdin);
-                    album[strcspn(album, "\n")] = '\0';
-                    if (strcmp(album, "FIM") == 0) {
-                        break;
-                    }
-                    novoArtista.num_albums++;
-                    novoArtista.albums = (char **)realloc(novoArtista.albums, novoArtista.num_albums * sizeof(char *));
-                    novoArtista.albums[novoArtista.num_albums - 1] = strdup(album);
+        switch (escolha)
+        {
+        case 1:
+            printf("Digite os detalhes do novo artista (ou digite 'FIM' para parar):\n");
+            struct Artista novoArtista;
+            printf("Nome: ");
+            getchar();
+            fgets(novoArtista.nome, sizeof(novoArtista.nome), stdin);
+            novoArtista.nome[strcspn(novoArtista.nome, "\n")] = '\0';
+            printf("Genero: ");
+            fgets(novoArtista.genero, sizeof(novoArtista.genero), stdin);
+            novoArtista.genero[strcspn(novoArtista.genero, "\n")] = '\0';
+            printf("Local: ");
+            fgets(novoArtista.local, sizeof(novoArtista.local), stdin);
+            novoArtista.local[strcspn(novoArtista.local, "\n")] = '\0';
+            printf("Albuns (insira um por linha, digite 'FIM' para parar):\n");
+            novoArtista.num_albums = 0;
+            novoArtista.albums = NULL;
+            char album[100];
+            while (1)
+            {
+                fgets(album, sizeof(album), stdin);
+                album[strcspn(album, "\n")] = '\0';
+                if (strcmp(album, "FIM") == 0)
+                {
+                    break;
                 }
-                inserirArtista(novoArtista, &artistas, &num_artistas);
-                break;
+                novoArtista.num_albums++;
+                novoArtista.albums = (char **)realloc(novoArtista.albums, novoArtista.num_albums * sizeof(char *));
+                novoArtista.albums[novoArtista.num_albums - 1] = strdup(album);
+            }
+            inserirArtista(novoArtista, &artistas, &num_artistas);
+            break;
 
-            case 2:
-                printf("Informe o nome do álbum para ser buscado: ");
-                fgets(nomeArtista, sizeof(nomeArtista), stdin);
-                nomeArtista[strcspn(nomeArtista, "\n")] = '\0'; 
-                removerArtista(nomeArtista, &artistas, &num_artistas);
-                break;
+        case 2:
+            printf("Digite o nome do artista a ser buscado: ");
+            getchar();
+            fgets(nomeArtista, sizeof(nomeArtista), stdin);
+            buscarArtista(nomeArtista, artistas, num_artistas);
+            break;
 
-            case 3:
-                printf("Informe o nome do álbum para ser buscado: ");
-                fgets(nomeArtista, sizeof(nomeArtista), stdin);
-                nomeArtista[strcspn(nomeArtista, "\n")] = '\0'; 
-                editarArtista(nomeArtista, artistas, num_artistas);
-                break;
+        case 3:
+            printf("Saindo...\n");
+            break;
 
-            case 4:
-                printf("Informe o nome do álbum para ser buscado: ");
-                fgets(nomeArtista, sizeof(nomeArtista), stdin);
-                nomeArtista[strcspn(nomeArtista, "\n")] = '\0'; 
-                buscarArtista(nomeArtista, artistas, num_artistas);
-                break;
-
-            case 5:
-                printf("Informe o nome do álbum para ser buscado: ");
-                fgets(nomealbum, sizeof(nomealbum), stdin);
-                nomealbum[strcspn(nomealbum, "\n")] = '\0'; 
-                buscaralbum(nomealbum, artistas, num_artistas);
-                break;
-
-            case 6:
-                printf("Saindo\n");
-                break;
-
-            default:
-                printf("Essa opção não é inválida. Tente novamente.\n");
-                break;
+        default:
+            printf("Opcao invalida. Tente novamente.\n");
+            break;
         }
-    } while (escolha != 6);
+    } while (escolha != 3);
 
-    for (int i = 0; i < num_artistas; i++) {
-        for (int j = 0; j < artistas[i].num_albums; j++) {
+    for (int i = 0; i < num_artistas; i++)
+    {
+        for (int j = 0; j < artistas[i].num_albums; j++)
+        {
             free(artistas[i].albums[j]);
         }
         free(artistas[i].albums);
     }
     free(artistas);
 
-    SetConsoleOutputCP(CPAGE_DEFAULT);
     return 0;
 }
